@@ -3,7 +3,7 @@ INCLUDE Irvine32.inc
 ; Test on commiting code to the repo
 
 .data
-	msg BYTE "Hello", 0
+	msg BYTE "Hello Sam!", 0
 	string DWORD 0
 
 .code
