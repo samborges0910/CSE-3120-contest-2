@@ -1,19 +1,16 @@
 INCLUDE Irvine32.inc
 
-; Test on commiting code to the repo
-
 .data
-	msg BYTE "Hello Alejandro!", 0
-	string DWORD 0
-
+	rowString BYTE "|. . . . . . .|", 0     ; constructing the 6x7 grid
 .code
-	main PROC
-	mov edx, OFFSET msg
-	mov eax, edx
+main PROC
+	mov ecx, 6
+printRows:
+	mov edx, OFFSET rowString
 	call WriteString
-	call ReadChar
+	call Crlf
+	loop printRows
+
 	exit
-
 main ENDP
-
 END main
