@@ -3,6 +3,7 @@ INCLUDE Irvine32.inc
 .data
 	grid BYTE 42 DUP('.')
 	promptMessage BYTE "Enter a column 1 to 7, or 0 to quit: ", 0
+	invalidMessage BYTE "Invalid input. Try again.", 0
 	rowString BYTE "| . . . . . . . |", 0
 
 .code
@@ -68,9 +69,18 @@ mainLoop: ; implement main loop to prompt input
 	call ReadInt
 	cmp eax, 0 ; if input 0, terminate program
 	je quitProgram
+	jl invalid
+	cmp eax, 7
+	jg invalid
 	cmp eax, 1
 	push eax
 	call dropDisc
+	jmp mainLoop
+
+invalid:
+	mov edx, OFFSET invalidMessage
+	call WriteString
+	call Crlf
 	jmp mainLoop
 
 quitProgram:
