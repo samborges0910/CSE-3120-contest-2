@@ -2,7 +2,7 @@ INCLUDE Irvine32.inc
 
 .data
 	grid BYTE 42 DUP('.')
-	promptMessage BYTE "Enter a column 1 to 7: ", 0
+	promptMessage BYTE "Enter a column 1 to 7, or 0 to quit: ", 0
 	rowString BYTE "| . . . . . . . |", 0
 
 .code
@@ -66,11 +66,15 @@ mainLoop: ; implement main loop to prompt input
 	mov edx, OFFSET promptMessage ; asks for user input
 	call WriteString
 	call ReadInt
-
+	cmp eax, 0 ; if input 0, terminate program
+	je quitProgram
 	cmp eax, 1
 	push eax
 	call dropDisc
 	jmp mainLoop
+
+quitProgram:
+	exit
 
 	exit
 main ENDP
