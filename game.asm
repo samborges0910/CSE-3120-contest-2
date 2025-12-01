@@ -5,6 +5,7 @@ INCLUDE Irvine32.inc
 	promptMessage BYTE "Enter a column 1 to 7, or 0 to quit: ", 0
 	invalidMessage BYTE "Invalid input. Try again.", 0
 	rowString BYTE "| . . . . . . . |", 0
+	fullColumnMessage BYTE "Column is full. Try another column.", 0
 
 	turn BYTE 0 ; tracks whos turn it is, X or O
 
@@ -37,6 +38,7 @@ printGrid ENDP
 
 ;--- Dropping disc function ---
 dropDisc PROC
+	mov ecx, 6 ; fix full column bug
 	dec eax
 	mov ebx, eax
 	mov edx, 5 ; disc will be inserted at the bottom of the grid
