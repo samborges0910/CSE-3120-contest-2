@@ -8,7 +8,7 @@ INCLUDE Irvine32.inc
 .code
 
 ;--- Printing grid ---
-	printGrid PROC ; function for printing the grid
+printGrid PROC ; function for printing the grid
 	mov esi, OFFSET grid
 	mov ecx, 6
 
@@ -33,13 +33,12 @@ printColumn:
 printGrid ENDP
 
 ;--- Dropping disc function ---
-
 dropDisc PROC
 	dec eax
 	mov ebx, eax
 	mov edx, 5 ; disc will be inserted at the bottom of the grid
 
-chosenSpot:
+chosenSpot: ; inserting disc at desired column
 	mov esi, OFFSET grid ; pointer to start of grid
 	mov eax, edx
 	imul eax, 7 ; multiply row index by number of columns
@@ -59,7 +58,6 @@ placeO:
 dropDisc ENDP
 
 ;--- Main ---
-
 main PROC
 
 mainLoop: ; implement main loop to prompt input
@@ -69,6 +67,7 @@ mainLoop: ; implement main loop to prompt input
 	call WriteString
 	call ReadInt
 
+	cmp eax, 1
 	push eax
 	call dropDisc
 	jmp mainLoop
