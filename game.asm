@@ -20,6 +20,12 @@ printRows:
 	call Crlf
 	loop printRows
 
+mainLoop: ; implement main loop to prompt input
+	mov edx, OFFSET promptMessage
+	call WriteString
+	call ReadInt
+	jmp mainLoop
+
 	exit
 main ENDP
 END main
