@@ -6,6 +6,8 @@ INCLUDE Irvine32.inc
 	invalidMessage BYTE "Invalid input. Try again.", 0
 	rowString BYTE "| . . . . . . . |", 0
 
+	turn BYTE 0 ; tracks whos turn it is, X or O
+
 .code
 
 ;--- Printing grid ---
@@ -46,14 +48,24 @@ chosenSpot: ; inserting disc at desired column
 	add eax, ebx
 	add esi, eax ; point to grid[row][col]
 	cmp BYTE PTR [esi], '.'
-	je placeO ; adds 'O' in empty spot
+	je placeX
 	dec edx
-	cmp edx, -1
-	jg chosenSpot ; now 'O' will be inserted at upper level
+	loop chosenSpot
+	mov eax, 0
 	ret
+
+placeX: ; added player X
+	cmp turn, 0
+	je placeO ; if turn = 0, jump to player O
+	mov BYTE PTR [esi], 'X'
+	jmp switchTurn
 
 placeO:
 	mov BYTE PTR [esi], 'O'
+
+switchTurn: ; function to switch turns between player O and X
+	xor turn, 1
+	mov eax, 1
 	ret
 
 dropDisc ENDP
