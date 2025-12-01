@@ -7,8 +7,8 @@ INCLUDE Irvine32.inc
 
 .code
 
-;---printing grid---
-printGrid PROC ; function for printing the grid
+;--- Printing grid ---
+	printGrid PROC ; function for printing the grid
 	mov esi, OFFSET grid
 	mov ecx, 6
 
@@ -24,7 +24,7 @@ printColumn:
 	inc esi
 	dec edx
 	jnz printColumn
- 	mov edx, OFFSET rowString
+	mov edx, OFFSET rowString
 	call WriteString
 	call Crlf
 	loop printRow
@@ -32,29 +32,34 @@ printColumn:
 
 printGrid ENDP
 
-; --- dropping disc function ---
-dropDisc PROC
-  	  dec eax
-  	  mov ebx, eax
- 	   mov edx, 5 ; disc will be inserted at bottom row
+;--- Dropping disc function ---
 
-chosenSpot: ; inserting disc at desired column
-   	 mov esi, OFFSET grid ; pointer to start of grid
-   	 mov eax, edx
-   	 imul eax, 7 ; multiply row index by number of columns
-   	 add eax, ebx
-   	 add esi, eax ; point to grid[row][col]
-    	cmp BYTE PTR [esi], '.'
-   	 je placeO ; adds 'O' in empty spot
-   	 ret
+dropDisc PROC
+	dec eax
+	mov ebx, eax
+	mov edx, 5 ; disc will be inserted at the bottom of the grid
+
+chosenSpot:
+	mov esi, OFFSET grid ; pointer to start of grid
+	mov eax, edx
+	imul eax, 7 ; multiply row index by number of columns
+	add eax, ebx
+	add esi, eax ; point to grid[row][col]
+	cmp BYTE PTR [esi], '.'
+	je placeO ; adds 'O' in empty spot
+	dec edx
+	cmp edx, -1
+	jg chosenSpot ; now 'O' will be inserted at upper level
+	ret
 
 placeO:
-   	 mov BYTE PTR [esi], 'O'
-   	 ret
+	mov BYTE PTR [esi], 'O'
+	ret
 
 dropDisc ENDP
 
-; --- main ---
+;--- Main ---
+
 main PROC
 
 mainLoop: ; implement main loop to prompt input
@@ -64,11 +69,11 @@ mainLoop: ; implement main loop to prompt input
 	call WriteString
 	call ReadInt
 
-    	cmp eax, 1
-   	push eax
-    	call dropDisc
-    	jmp mainLoop
+	push eax
+	call dropDisc
+	jmp mainLoop
 
+	exit
 main ENDP
 
 END main
