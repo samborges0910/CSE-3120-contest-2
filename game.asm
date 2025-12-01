@@ -1,7 +1,9 @@
 INCLUDE Irvine32.inc
 
 .data
-	rowString BYTE "|. . . . . . .|", 0     ; constructing the 6x7 grid
+	grid BYTE 42 DUP('.')
+	promptMessage BYTE "Enter a column 1 to 7: ", 0
+	rowString BYTE "| . . . . . . . |", 0 
 .code
 main PROC
 	mov ecx, 6
