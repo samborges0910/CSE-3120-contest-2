@@ -87,6 +87,14 @@ mainLoop: ; implement main loop to prompt input
 	cmp eax, 1
 	push eax
 	call dropDisc
+	cmp eax, 1
+	jne columnFull
+	jmp mainLoop
+
+columnFull: ; outputs message if the column is full and cannot accept any more discs
+	mov edx, OFFSET fullColumnMessage
+	call WriteString
+	call Crlf
 	jmp mainLoop
 
 invalid:
