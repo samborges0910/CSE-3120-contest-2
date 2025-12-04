@@ -12,28 +12,112 @@ INCLUDE Irvine32.inc
 .code
 
 ;--- Printing grid ---
-printGrid PROC ; function for printing the grid
-	mov esi, OFFSET grid
-	mov ecx, 6
+printGrid PROC
+mov esi, OFFSET grid; pointer to grid(6×7)
+mov ecx, 6; logical row counter
 
-printRow: ; added loops to print rows and columns
-	mov edi, OFFSET rowString
-	add edi, 2
-	mov edx, 7
+printRow :
+push ecx; save logical row counter
+mov edi, 2; print each row twice(2 - high)
 
-printColumn:
-	mov al, [esi]
-	mov [edi], al
-	add edi, 2
-	inc esi
-	dec edx
-	jnz printColumn
-	mov edx, OFFSET rowString
-	call WriteString
-	call Crlf
-	loop printRow
-	ret
+rowHeightLoop:
 
+; ----Center row----
+mov eax, 15
+call SetTextColor
+mov ebx, 32
+centerLoop:
+mov al, ' '
+call WriteChar
+dec ebx
+jnz centerLoop
+
+; ----Left border----
+mov eax, 15
+call SetTextColor
+mov al, '|'
+call WriteChar
+
+; ----Print columns----
+mov edx, esi; EDX = temp pointer for columns
+mov ebx, 7; 7 columns
+
+printColumn :
+mov al, [edx]; read grid cell
+
+cmp al, '.'
+je emptyCell
+cmp al, 'X'
+je xCell
+cmp al, 'O'
+je oCell
+
+emptyCell :
+mov eax, 7; light gray
+call SetTextColor
+mov al, 219; ?
+call WriteChar
+call WriteChar; 2 - wide
+mov al, ' '
+call WriteChar; horizontal spacing
+jmp nextCell
+
+xCell :
+mov eax, 12; bright red
+call SetTextColor
+mov al, 219
+call WriteChar
+call WriteChar
+mov al, ' '
+call WriteChar
+jmp nextCell
+
+oCell :
+mov eax, 11; bright cyan
+call SetTextColor
+mov al, 219
+call WriteChar
+call WriteChar
+mov al, ' '
+call WriteChar
+
+nextCell :
+inc edx
+dec ebx
+jnz printColumn
+
+; ----Right border----
+mov eax, 15
+call SetTextColor
+mov al, '|'
+call WriteChar
+
+call Crlf
+
+dec edi
+jnz rowHeightLoop
+
+; ----------VERTICAL SPACING BETWEEN ROWS----------
+; print one blank centered line
+mov eax, 15
+call SetTextColor
+
+mov ebx, 32
+space2Loop:
+mov al, ' '
+call WriteChar
+dec ebx
+jnz space2Loop
+
+call Crlf
+
+; ----------NEXT LOGICAL ROW----------
+pop ecx
+add esi, 7; next grid row
+dec ecx
+jnz printRow
+
+ret
 printGrid ENDP
 
 ;--- Dropping disc function ---
