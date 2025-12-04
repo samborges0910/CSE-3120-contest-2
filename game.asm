@@ -6,7 +6,8 @@ INCLUDE Irvine32.inc
 	invalidMessage BYTE "Invalid input. Try again.", 0
 	rowString BYTE "| . . . . . . . |", 0
 	fullColumnMessage BYTE "Column is full. Try another column.", 0
-
+	xWinMessage BYTE "Player X wins!", 0
+	oWinMessage BYTE "Player O wins!", 0
 	turn BYTE 0 ; tracks whos turn it is, X or O
 
 .code
@@ -186,19 +187,208 @@ checkBoundries PROC ; checks if esi is within the bounds of the grid returns 1 i
 checkBoundries ENDP
 
 checkWin PROC
-	push ecx
 	push ebx
+	push ecx
+	push edx
 	push esi
+	push edi
 
-	xor ecx, ecx
-	xor ebx, ebx
-	mov esi, offset grid
+	; Check horizontal wins(4 in a row)
+	mov edi, 0; row counter
 
+	checkHorizRow :
+	cmp edi, 6
+	jge checkVertStart; done with all rows
+
+	mov esi, OFFSET grid
+	mov eax, edi
+	imul eax, 7; row offset
+	add esi, eax
+
+	mov ebx, 0; column counter
+
+	checkHorizCol :
+	cmp ebx, 4; can only check columns 0 - 3
+	jge nextHorizRow
+
+	mov al, [esi + ebx]; first piece
+	cmp al, '.'
+	je incHorizCol
+
+	; Check if next 3 match
+	mov dl, [esi + ebx + 1]
+	cmp al, dl
+	jne incHorizCol
+	mov dl, [esi + ebx + 2]
+	cmp al, dl
+	jne incHorizCol
+	mov dl, [esi + ebx + 3]
+	cmp al, dl
+	jne incHorizCol
+
+	; Found winner
+	jmp foundWinner
+
+	incHorizCol :
+	inc ebx
+	jmp checkHorizCol
+
+	nextHorizRow :
+	inc edi
+	jmp checkHorizRow
+
+	; Check vertical wins
+	checkVertStart :
+	mov edi, 0; row counter
+
+	checkVertRow :
+	cmp edi, 3; can only check rows 0 - 2
+	jge checkDiagUpStart
+
+	mov ebx, 0; column counter
+
+	checkVertCol :
+	cmp ebx, 7
+	jge nextVertRow
+
+	mov esi, OFFSET grid
+	mov eax, edi
+	imul eax, 7
+	add eax, ebx
+	add esi, eax
+
+	mov al, [esi]; first piece
+	cmp al, '.'
+	je incVertCol
+
+	; Check next 3 down
+	mov dl, [esi + 7]
+	cmp al, dl
+	jne incVertCol
+	mov dl, [esi + 14]
+	cmp al, dl
+	jne incVertCol
+	mov dl, [esi + 21]
+	cmp al, dl
+	jne incVertCol
+
+	; Found winner
+	jmp foundWinner
+
+	incVertCol :
+	inc ebx
+	jmp checkVertCol
+
+	nextVertRow :
+	inc edi
+	jmp checkVertRow
+
+	; Check diagonal / (up - right)
+	checkDiagUpStart:
+	mov edi, 3; start at row 3
+
+	checkDiagUpRow:
+	cmp edi, 6
+	jge checkDiagDownStart
+
+	mov ebx, 0; column counter
+
+	checkDiagUpCol :
+	cmp ebx, 4; can only check columns 0 - 3
+	jge nextDiagUpRow
+
+	mov esi, OFFSET grid
+	mov eax, edi
+	imul eax, 7
+	add eax, ebx
+	add esi, eax
+
+	mov al, [esi]
+	cmp al, '.'
+	je incDiagUpCol
+
+	; Check diagonal up - right
+	mov dl, [esi - 6]; row - 1, col + 1
+	cmp al, dl
+	jne incDiagUpCol
+	mov dl, [esi - 12]
+	cmp al, dl
+	jne incDiagUpCol
+	mov dl, [esi - 18]
+	cmp al, dl
+	jne incDiagUpCol
+
+	; Found winner
+	jmp foundWinner
+
+	incDiagUpCol :
+	inc ebx
+	jmp checkDiagUpCol
+
+	nextDiagUpRow :
+	inc edi
+	jmp checkDiagUpRow
+
+	; Check diagonal \ (down - right)
+	checkDiagDownStart:
+	mov edi, 0; start at row 0
+
+	checkDiagDownRow:
+	cmp edi, 3; can only check rows 0 - 2
+	jge noWinner
+
+	mov ebx, 0; column counter
+
+	checkDiagDownCol :
+	cmp ebx, 4; can only check columns 0 - 3
+	jge nextDiagDownRow
+
+	mov esi, OFFSET grid
+	mov eax, edi
+	imul eax, 7
+	add eax, ebx
+	add esi, eax
+
+	mov al, [esi]
+	cmp al, '.'
+	je incDiagDownCol
+
+	; Check diagonal down - right
+	mov dl, [esi + 8]; row + 1, col + 1
+	cmp al, dl
+	jne incDiagDownCol
+	mov dl, [esi + 16]
+	cmp al, dl
+	jne incDiagDownCol
+	mov dl, [esi + 24]
+	cmp al, dl
+	jne incDiagDownCol
+
+	; Found winner
+	jmp foundWinner
+
+	incDiagDownCol :
+	inc ebx
+	jmp checkDiagDownCol
+
+	nextDiagDownRow :
+	inc edi
+	jmp checkDiagDownRow
+
+	noWinner :
+	mov al, '.'
+	jmp checkWinDone
+
+	foundWinner :
+	; al already contains winning character
+
+	checkWinDone :
+	pop edi
 	pop esi
-	pop ebx
+	pop edx
 	pop ecx
+	pop ebx
 	ret
-
 checkWin ENDP
 
 ;--- Main ---
@@ -220,6 +410,10 @@ mainLoop: ; implement main loop to prompt input
 	call dropDisc
 	cmp eax, 1
 	jne columnFull
+	call checkWin
+	cmp al, '.'
+	jne won
+
 	jmp mainLoop
 
 columnFull: ; outputs message if the column is full and cannot accept any more discs
@@ -233,6 +427,9 @@ invalid:
 	call WriteString
 	call Crlf
 	jmp mainLoop
+
+won:
+	call printGrid
 
 quitProgram:
 	exit
