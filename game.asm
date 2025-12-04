@@ -147,14 +147,59 @@ placeX: ; added player X
 	jmp switchTurn
 
 placeO:
-	mov BYTE PTR [esi], 'O'
+mov BYTE PTR[esi], 'O'
 
-switchTurn: ; function to switch turns between player O and X
-	xor turn, 1
-	mov eax, 1
-	ret
+switchTurn : ; function to switch turns between player O and X
+xor turn, 1
+mov eax, 1
+ret
 
 dropDisc ENDP
+
+checkBoundries PROC ; checks if esi is within the bounds of the grid returns 1 if it is else 0 in eax
+	push edx
+	push ecx
+
+	mov edx, offset grid
+	mov ecx, edx
+	add ecx, 42
+
+	cmp esi, edx
+	jb out_of_bounds
+
+	cmp esi, ecx
+	jae out_of_bounds
+
+	jmp in_bounds
+
+	out_of_bounds:
+	mov eax, 0
+	jmp done
+
+	in_bounds:
+	mov eax, 1
+
+	done:
+	pop ecx
+	pop edx
+	ret
+checkBoundries ENDP
+
+checkWin PROC
+	push ecx
+	push ebx
+	push esi
+
+	xor ecx, ecx
+	xor ebx, ebx
+	mov esi, offset grid
+
+	pop esi
+	pop ebx
+	pop ecx
+	ret
+
+checkWin ENDP
 
 ;--- Main ---
 main PROC
